@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>F2xDV Group Project Template</title>
+
+    <script src="lib/d3/d3.v7.min.js"></script>
+    <script src="lib/d3/topojson-client.v3.min.js"></script>
+    <script src="lib/d3/d3-geo-projection.v4.min.js"></script>
+    <link rel="stylesheet" href="styles/main.css">
+    <script type="module" src="scripts/data/geo-doughnut-data.js"></script>
+    <script type="module" src="scripts/data/dep-bar-data.js"></script>
+    <script type="module" src="scripts/data/line-chart-data.js"></script>
+    <script type="module" src="scripts/data/dropdown-bar-data.js"></script>
+    <script type="module" src="scripts/data/museum-types.js"></script>
+    <script type="module" src="scripts/data/map-data.js"></script>
+    <script type="module" src="scripts/data/scatter-plot-data.js"></script>
+</head>
+
+<body>
+    <div class="logo">
+        <img src="images/logo.png">
+        <h1 id="page-title">Mapping Museums</h1>
+    </div>
+    <div class="nav">
+        <ul>
+            <li id="tab-geo-doughnut" class="active"><a href="#">Geodemographics of Museums</a></li>
+            <li id="tab-dep-bar"><a href="#">Area Deprivation Index of Museum Types</a></li>
+            <li id="tab-bar-chart"><a href="#">Museum Closures</a></li>
+            <li id="tab-museum-type"><a href="#">Types of Area Deprivation by Museum</a></li>
+            <li id="tab-map-view"><a href="#">History of Museum Openings</a></li>
+        </ul>
+    </div>
+    <div id="geo-doughnut-container" class="chart-container" style="display: block;">
+        <div class="section-container">
+            <div class="header">
+                <h1>Distribution of Museums by Geodemographic Group</h1>
+            </div>
+            <div class="description">
+                <p>Doughnut chart showing the distribution of the types of museums across the geodemographic groups.</p>
+            </div>
+        </div>
+        <div class="section-container">
+            <div id="geo-doughnut-container">
+                <div id="sub-type-doughnut"></div>
+                <div id="doughnut-map"></div>
+            </div>
+        </div>
+    </div>
+    <div id="dep-bar-container" class="chart-container" style="display: none;">
+        <div class="section-container">
+            <div class="header">
+                <h1>Deprivation Index vs Museum Category</h1>
+            </div>
+            <div class="description">
+                <p>Bar chart showing the average deprivation index of each museum category.</p>
+            </div>
+        </div>
+        <div class="section-container">
+            <div id="dep-bar-container">
+                <div id="dep-bar-chart"></div>
+                <div id="dep-doughnut-container" class="hidden">
+                    <button id="doughnut-close">Close</button>
+                    <div id="dep-doughnut"></div>
+                </div>
+            </div>
+            <select id="dep-bar-select" size="10"></select>
+        </div>
+    </div>
+    <div id="bar-chart-container" class="chart-container" style="display: none;">
+        <div class="section-container">
+            <div class="header">
+                <h1>Area Geographic Supergroup vs Deprivation Index</h1>
+            </div>
+            <div class="description">
+                <p>Bar chart showing the average deprivation index in each area geographic supergroup. (10 = least
+                    deprived, 1 = most deprived)</p>
+            </div>
+        </div>
+        <div class="section-container">
+            <div id="bar-chart"></div>
+        </div>
+        <div class="section-container">
+            <div class="header">
+                <h1>Ratio Of Museum Closures Over Area Deprivation Index</h1>
+            </div>
+            <div class="description">
+                <p>Line chart showing the ratio of museum closures : total number of museums, for each value in the area
+                    deprivation index.</p>
+            </div>
+        </div>
+        <div class="section-container">
+            <div class="allocation">
+                <div id="line-chart-dropbar"></div>
+                <div id="line-chart"></div>
+            </div>
+        </div>
+    </div>
+    <div id="museum-type-container" class="chart-container" style="display: none;">
+        <div class="section-container">
+            <div class="header">
+                <h1>Likelihood of Museum Closure by Category</h1>
+            </div>
+            <div class="description">
+                <p>Bar chart showing the likelihood of a museum closing based on its category.</p>
+            </div>
+        </div>
+        <div class="section-container">
+            <div id="museum-type-bar-chart"></div>
+        </div>
+    </div>
+    <div id="map-view-container" class="chart-container" style="display: none;">
+        <div class="section-container">
+            <div class="header">
+                <h1>Map of the Museums in the United Kingdom</h1>
+            </div>
+            <div class="description">
+                <p>This visualisation shows the locations of museums in the UK throughout history.</p>
+            </div>
+        </div>
+        <div class="section-container">
+            <div id="map-line-chart-container" style="display: flex;">
+                <div id="map-line-chart"></div>
+                <div id="map"></div>
+            </div>
+        </div>
+        <div class="section-container" style="display: flex;">
+            <div id="slider"></div>
+            <div class=="note">​
+
+        <p>Note: The majority of data collection happened between 2016-2017, and much of it was taken from a​
+        survey done in 1963. Due to missing and unclear data, if a museum did not have a known​
+        opening​ year,it was assumed to have opened between 1945/1960 and 2017. See <a
+        href="https://museweb.dcs.bbk.ac.uk/faq#BSV">the mapping museum FAQ<a> for details <br> For​
+        visualisation scaling and clarity, data​ points matching this pattern were filtered from the line chart's data. With these ranges in​ mind, the​ line chart shows the latest date a museum may have opened, and the earliest year it may have​ closed.</p>​
+        <p>The map does not filter these data points as it does not affect the visualisation quality</p>​
+        </div>​
+        </div>
+    </div>
+    <script>
+        document.querySelectorAll('.nav li').forEach(function (tab) {
+            tab.addEventListener('click', function () {
+                var tabId = tab.getAttribute('id');
+                var containerId = tabId.replace('tab-', '') + '-container';
+                var containers = document.querySelectorAll('.chart-container');
+                var tabs = document.querySelectorAll('.nav li');
+
+                containers.forEach(function (container) {
+                    container.style.display = 'none';
+                });
+
+                tabs.forEach(function (tab) {
+                    tab.classList.remove('active');
+                });
+
+                document.getElementById(containerId).style.display = 'block';
+                tab.classList.add('active');
+            });
+        });
+    </script>
+</body>
+
+</html>
